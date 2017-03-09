@@ -12,7 +12,7 @@ mvn clean install
 java -jar target\GWT-HAR-Parser-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
-### Result with sample file
+Result with sample file
 
 ```
 -------------------REQUEST 1---Success--------------------
@@ -40,7 +40,7 @@ com.example.shared.HelloResult@6acdbdf5[a=1,b=GWT User]
 
 ```
 
-### Run with your JARs and your HTTP Archive format
+## Run with your JARs and your HTTP Archive format
 
 ```
 java -jar target\GWT-HAR-Parser-1.0-SNAPSHOT-jar-with-dependencies.jar C:\temp\libs C:\temp\localhost.har
