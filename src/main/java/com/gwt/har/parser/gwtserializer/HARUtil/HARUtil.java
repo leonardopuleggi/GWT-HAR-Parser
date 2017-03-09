@@ -15,7 +15,7 @@
 
 package com.gwt.har.parser.gwtserializer.HARUtil;
 
-import com.gwt.har.parser.gwtserializer.ClassloaderUtil;
+import com.gwt.har.parser.gwtserializer.classloader.ClassloaderUtil;
 import com.gwt.har.parser.gwtserializer.model.XHRRequestResponse;
 import de.sstoehr.harreader.HarReader;
 import de.sstoehr.harreader.HarReaderException;

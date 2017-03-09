@@ -13,7 +13,7 @@
  * the License.
  */
 
-package com.gwt.har.parser.gwtserializer;
+package com.gwt.har.parser.gwtserializer.classloader;
 
 import java.io.File;
 import java.io.FileOutputStream;

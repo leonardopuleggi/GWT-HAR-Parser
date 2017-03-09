@@ -31,12 +31,9 @@ public class Main {
     public static void main(String[] args) {
         String classpath = "";
         String har = "";
-        String debug = "";
 
         if (args == null || args.length < 2) {
             printDefault();
-            classpath = "D:\\temp\\libs";
-            har = "D:\\temp\\lhc-wm-jt-dt9.gbst.net.har";
         } else {
             classpath = args[0];
             har = args[1];
@@ -66,7 +63,7 @@ public class Main {
     private static void printDefault() {
         System.out.println("You've launched GWT-HAR-Parser with no option (or wrong ones) so it'll just run with the default \"sample-01.har\" and JARs in the application.\n"
                 + "\nIf you want to try something different please specify a folder with the classes of JARs for the GWT client and server classes and the HAR\n"
-                + "as specified in the sample\n");
+                + "as specified in the sample\n\njava -jar target\\GWT-HAR-Parser-1.0-SNAPSHOT-jar-with-dependencies.jar C:\\temp\\libs C:\\temp\\localhost.har");
     }
 
     private static void printOptions(String classpath, String har) {

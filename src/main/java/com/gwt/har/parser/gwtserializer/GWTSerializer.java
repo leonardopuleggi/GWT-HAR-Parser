@@ -20,7 +20,7 @@ import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.impl.RequestCallbackAdapter;
 import com.google.gwt.user.server.rpc.RPCRequest;
 import com.gwt.har.parser.com.gdevelop.gwt.syncrpc.SyncClientSerializationStreamReader;
-import static com.gwt.har.parser.gwtserializer.ClassloaderUtil.loadClassloader;
+import static com.gwt.har.parser.gwtserializer.classloader.ClassloaderUtil.loadClassloader;
 import static com.gwt.har.parser.gwtserializer.HARUtil.HARUtil.getRequestsAndResponses;
 import com.gwt.har.parser.gwtserializer.model.XHRRequestResponse;
 import com.gwt.har.parser.gwtserializer.serialization.DummySerializationPolicy;
