@@ -1,4 +1,4 @@
-Small Java app that read HAR files with GWT RPC request and attemps to serialize/deserialize the requests/responses
+Small Java app that reads HAR files with GWT RPC requests and attemps to serialize/deserialize the requests/responses
 
 ## Building
 
