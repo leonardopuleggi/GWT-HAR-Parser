@@ -16,6 +16,7 @@
 package com.gwt.har.parser.gwtserializer;
 
 import com.google.gwt.user.client.rpc.impl.RequestCallbackAdapter;
+import com.google.gwt.user.client.rpc.impl.RequestCallbackAdapter.ResponseReader;
 import com.google.gwt.user.server.rpc.RPCRequest;
 import com.gwt.har.parser.com.gdevelop.gwt.syncrpc.SyncClientSerializationStreamReader;
 import static com.gwt.har.parser.gwtserializer.classloader.ClassloaderUtil.loadClassloader;
@@ -26,7 +27,9 @@ import de.sstoehr.harreader.HarReaderException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * GWTSerializer class.
@@ -36,6 +39,39 @@ import java.util.List;
  * 
  */
 public class GWTSerializer {
+    private static final Map<Class<?>, ResponseReader> JPRIMITIVETYPE_TO_RESPONSEREADER = new HashMap<Class<?>, ResponseReader>();
+
+    static {
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(boolean.class,
+                ResponseReader.BOOLEAN);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(byte.class, ResponseReader.BYTE);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(char.class, ResponseReader.CHAR);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(double.class,
+                ResponseReader.DOUBLE);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(float.class, ResponseReader.FLOAT);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(int.class, ResponseReader.INT);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(long.class, ResponseReader.LONG);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(short.class, ResponseReader.SHORT);
+        JPRIMITIVETYPE_TO_RESPONSEREADER.put(void.class, ResponseReader.VOID);
+    }
+    
+    private static ResponseReader getReaderFor(Class<?> type) {
+        ResponseReader primitiveResponseReader = JPRIMITIVETYPE_TO_RESPONSEREADER
+                .get(type);
+        if (primitiveResponseReader != null) {
+            return primitiveResponseReader;
+        }
+
+        if (type == String.class) {
+            return ResponseReader.STRING;
+        }
+        if (type == Void.class || type == void.class) {
+            return ResponseReader.VOID;
+        }
+
+        return ResponseReader.OBJECT;
+    }
+        
     /**
      * Parse the given HAR file with the JARs in the classpath folder.
      * 
@@ -63,31 +99,43 @@ public class GWTSerializer {
             SyncClientSerializationStreamReader reader = rpcUtil.loadRPCReader(rpcFolder, each);
             
             //Request parsing
-            requestParsing(each, rpcUtil, i);
+            Class<?> returnType = requestParsing(each, rpcUtil, i);
             
             //Response parsing
-            responseParsing(each, reader, i);
+            responseParsing(each, reader, i, returnType);
             
             i++;
         }
     }
     
-    private static void requestParsing(XHRRequestResponse each, RPCPolicyUtil rpcUtil, int i) {
+    private static Class<?> requestParsing(XHRRequestResponse each, RPCPolicyUtil rpcUtil, int i) {
         RPCRequest req;
         try {
             req = com.google.gwt.user.server.rpc.RPC.decodeRequest(each.getRequest(), null, rpcUtil);
             printSuccessfulRequest(each, req, i);
+            
+            Class<?> returnType = req.getMethod() != null? req.getMethod().getReturnType() : null;
+            return returnType;
+            
         } catch (Exception e) {
             //TODO: try to parse with a dummy policy
             printUnsuccessful(i, true, e);
+            return null;
         }
     }
     
-    private static void responseParsing(XHRRequestResponse each, SyncClientSerializationStreamReader reader, int i) {
+    private static void responseParsing(XHRRequestResponse each, SyncClientSerializationStreamReader reader, int i, Class<?> returnType) {
         try {
             //TODO: parse ex as well or test exception
             reader.prepareToRead(each.getResponse().substring(4));
-            Object deserialized = RequestCallbackAdapter.ResponseReader.OBJECT.read(reader);
+            Object deserialized;
+            if (returnType != null) {
+                deserialized = getReaderFor(returnType).read(reader);
+            }
+            else {
+                //default to the object reader
+                deserialized = RequestCallbackAdapter.ResponseReader.OBJECT.read(reader);
+            }
             
             printSuccessfulResponse(each, deserialized, i);
         } catch (Exception e) {
