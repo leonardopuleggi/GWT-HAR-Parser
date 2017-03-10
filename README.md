@@ -1,4 +1,9 @@
-Small Java app that reads HAR files with GWT RPC requests and attemps to serialize/deserialize the requests/responses
+Small Java app that reads HAR files with GWT RPC requests and attemps to serialize/deserialize the requests/responses.
+
+I had developed this small tool long back to help a couple of devs to check what was happening in our GWT RPC services. GWT is not the latest framework available but I thought I'd share this for other that still need to support GWT applications. It's pretty easy nowadays to obtain an HAR from the client's browser but it might be hard to understand the result, especially for some complex objects contained in the respose.
+
+This tool tries to help you make sense of the request/responses by serializing/deserializing. With the toString() (if you have implemented it) or with Java Reflection in case you haven't implemented your own toString()
+
 
 ## Building
 
@@ -45,8 +50,13 @@ com.example.shared.HelloResult@6acdbdf5[a=1,b=GWT User]
 ```
 java -jar target\GWT-HAR-Parser-1.0-SNAPSHOT-jar-with-dependencies.jar C:\temp\libs C:\temp\localhost.har
 ```
-Important: you need to pass the JARs that will be used during the serialization/deserialization for your GWT RPC service; this 
-normally means what you have to pass a JAR file with the `client` and `shared` folder of your GWT project. If you are using library 
-to use directly the POJO as Hibernate one, please pass also these library
+#### Important: you need to pass the JARs that will be used during the serialization/deserialization of your GWT RPC service
+
+This normally means what you have to pass a directory with the JAR files with the `client` and `shared` folder of your GWT project.
+
+If you are using library
+to use directly the GWT POJOs from Hibernate POJOs (for example Gilead - https://github.com/emsouza/gilead), please pass also these library JARs.
+
+Ideally you can pass all the UI JARs (`client` and `shared` and `server` that you use)
 
 In case of any problem please contact us
