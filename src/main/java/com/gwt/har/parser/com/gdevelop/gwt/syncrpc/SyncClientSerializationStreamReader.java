@@ -876,4 +876,8 @@ public class SyncClientSerializationStreamReader extends AbstractSerializationSt
         public SerializationPolicy getSerializationPolicy() {
             return serializationPolicy;
         }
+
+        public Logger getLogger() {
+            return logger;
+        }
 }

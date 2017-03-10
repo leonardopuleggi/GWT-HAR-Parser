@@ -91,6 +91,7 @@ public class GWTSerializer {
             
             printSuccessfulResponse(each, deserialized, i);
         } catch (Exception e) {
+            //e.printStackTrace();
             printUnsuccessful(i, false, e);
         }
     }
@@ -113,7 +114,7 @@ public class GWTSerializer {
     
     private static void printUnsuccessful(int i, boolean isRequest, Exception e) {
         if (isRequest) {
-            System.out.println("-------------------REQUEST " + i + "---FAILURE--------------------");
+            System.out.println("-------------------REQUEST  " + i + "---FAILURE--------------------");
         }
         else {
             System.out.println("-------------------RESPONSE " + i + "---FAILURE--------------------");

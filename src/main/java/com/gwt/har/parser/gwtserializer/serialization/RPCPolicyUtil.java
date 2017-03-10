@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * RPC policy loader.
@@ -45,6 +46,9 @@ public class RPCPolicyUtil implements SerializationPolicyProvider {
      * @return 
      */
     public SyncClientSerializationStreamReader loadRPCReader(String baseFolder, XHRRequestResponse xhr) {
+        //default result
+        SyncClientSerializationStreamReader result = new SyncClientSerializationStreamReader(new DummySerializationPolicy());
+        
         if(!baseFolder.endsWith(File.separator)) {
             baseFolder += File.separator;
         }
@@ -57,19 +61,18 @@ public class RPCPolicyUtil implements SerializationPolicyProvider {
                 try {
                     List<ClassNotFoundException> classNotFoundExceptions = new ArrayList<>();
                     SerializationPolicy policy = SerializationPolicyLoader.loadFromStream(new FileInputStream(baseFolder+xhr.getStrongName()+".gwt.rpc"), classNotFoundExceptions);
-                    reader = new SyncClientSerializationStreamReader(policy);
-                    readers.put(xhr.getStrongName(), reader);
+                    result = new SyncClientSerializationStreamReader(policy);
+                    readers.put(xhr.getStrongName(), result);
                 } catch (IOException | ParseException ex) {
                     System.out.println("Cannot load the "+xhr.getStrongName()+".gwt.rpc file. Have you passed the right folder for these?");
-                    //return a reader with a dummy policy
-                    reader = new SyncClientSerializationStreamReader(new DummySerializationPolicy());
-                    readers.put(xhr.getStrongName(), reader);
-                    return reader;
+                    //return a reader with a dummy policy and the permutation name
+                    readers.put(xhr.getStrongName(), result);
                 }
             }
         }
-        //return a reader with a dummy policy in case the XHR doesn't contain the strong name
-        return new SyncClientSerializationStreamReader(new DummySerializationPolicy());
+        //set error level on the reader
+        result.getLogger().setLevel(Level.SEVERE);
+        return result;
     }
 
     @Override
@@ -80,5 +83,4 @@ public class RPCPolicyUtil implements SerializationPolicyProvider {
         }
         return new DummySerializationPolicy();
     }
-    
 }
