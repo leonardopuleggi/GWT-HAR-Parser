@@ -15,16 +15,13 @@
 
 package com.gwt.har.parser.gwtserializer;
 
-import com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException;
-import com.google.gwt.user.client.rpc.SerializationException;
 import com.google.gwt.user.client.rpc.impl.RequestCallbackAdapter;
 import com.google.gwt.user.server.rpc.RPCRequest;
 import com.gwt.har.parser.com.gdevelop.gwt.syncrpc.SyncClientSerializationStreamReader;
 import static com.gwt.har.parser.gwtserializer.classloader.ClassloaderUtil.loadClassloader;
 import static com.gwt.har.parser.gwtserializer.HARUtil.HARUtil.getRequestsAndResponses;
 import com.gwt.har.parser.gwtserializer.model.XHRRequestResponse;
-import com.gwt.har.parser.gwtserializer.serialization.DummySerializationPolicy;
-import com.gwt.har.parser.gwtserializer.serialization.DummySerializationPolicyProvider;
+import com.gwt.har.parser.gwtserializer.serialization.RPCPolicyUtil;
 import de.sstoehr.harreader.HarReaderException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import java.io.IOException;
@@ -44,54 +41,84 @@ public class GWTSerializer {
      * 
      * @param classpath
      * @param har
+     * @param rpcFolder
      * @throws NoSuchMethodException
      * @throws IOException
      * @throws HarReaderException
      * @throws InvocationTargetException
      * @throws IllegalAccessException
      */
-    public static void parse(String classpath, String har) throws IOException, HarReaderException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public static void parse(String classpath, String har, String rpcFolder) throws IOException, HarReaderException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         //load the necessary JARs
         loadClassloader(classpath);
 
         //get the GWT RPC requests/responses
         List<XHRRequestResponse> list = getRequestsAndResponses(har);
-        SyncClientSerializationStreamReader reader = new SyncClientSerializationStreamReader(new DummySerializationPolicy());
-
+        RPCPolicyUtil rpcUtil = new RPCPolicyUtil();
+        
+        //1 based just to print the request/response number
         int i = 1;
         for (XHRRequestResponse each : list) {
+            //get the (cached) reader for the specific strong permutation
+            SyncClientSerializationStreamReader reader = rpcUtil.loadRPCReader(rpcFolder, each);
+            
             //Request parsing
-            try {
-                RPCRequest req = com.google.gwt.user.server.rpc.RPC.decodeRequest(each.getRequest(), null, new DummySerializationPolicyProvider());
-                System.out.println("-------------------REQUEST " + i + "---Success--------------------\n");
-                System.out.println(each.getRequest() + "\n\n");
-                System.out.println("toString() =>\n" + req.toString());
-                System.out.println("\nvia reflection =>\n" + ToStringBuilder.reflectionToString(req) + "\n\n");
-
-            } catch (IncompatibleRemoteServiceException e) {
-                System.out.println("-------------------REQUEST " + i + "---FAILURE--------------------");
-                System.out.println("\n\nGWT client class couldn't be deserialized/serialized. Have you passed "
-                        + "the right class folder or the JARs to be loaded? \n" + e.getMessage() + "\n\n");
-            }
+            requestParsing(each, rpcUtil, i);
             
             //Response parsing
-            try {
-                //TODO: parse ex as well or test exception
-                reader.prepareToRead(each.getResponse().substring(4));
-                Object deserialized = RequestCallbackAdapter.ResponseReader.OBJECT.read(reader);
-
-                System.out.println("-------------------RESPONSE " + i + "---Success--------------------\n");
-                System.out.println(each.getResponse()+ "\n\n");
-                
-                System.out.println("toString() =>\n" + deserialized);
-                System.out.println("\nvia reflection =>\n" + ToStringBuilder.reflectionToString(deserialized) + "\n\n");
-
-            } catch (SerializationException e) {
-                System.out.println("-------------------RESPONSE " + i + "---FAILURE--------------------");
-                System.out.println("Cannot serialize/deserialize. One of the class necessary to serialize and deserialize was not found. Have you passed "
-                        + "the right class folder or the JARs to be loaded? \n" + e.getMessage() + "\n\n");
-            }
+            responseParsing(each, reader, i);
+            
             i++;
         }
+    }
+    
+    private static void requestParsing(XHRRequestResponse each, RPCPolicyUtil rpcUtil, int i) {
+        RPCRequest req;
+        try {
+            req = com.google.gwt.user.server.rpc.RPC.decodeRequest(each.getRequest(), null, rpcUtil);
+            printSuccessfulRequest(each, req, i);
+        } catch (Exception e) {
+            //TODO: try to parse with a dummy policy
+            printUnsuccessful(i, true, e);
+        }
+    }
+    
+    private static void responseParsing(XHRRequestResponse each, SyncClientSerializationStreamReader reader, int i) {
+        try {
+            //TODO: parse ex as well or test exception
+            reader.prepareToRead(each.getResponse().substring(4));
+            Object deserialized = RequestCallbackAdapter.ResponseReader.OBJECT.read(reader);
+            
+            printSuccessfulResponse(each, deserialized, i);
+        } catch (Exception e) {
+            printUnsuccessful(i, false, e);
+        }
+    }
+    
+    private static void printSuccessfulRequest(XHRRequestResponse each, RPCRequest req, int i) {
+        System.out.println("-------------------REQUEST " + i + "---Success--------------------\n");
+        System.out.println(each.getRequest() + "\n\n");
+        System.out.println("toString() =>\n" + req.toString());
+        System.out.println("\nvia reflection =>\n" + ToStringBuilder.reflectionToString(req) + "\n\n");
+    }
+    
+    private static void printSuccessfulResponse(XHRRequestResponse each, Object deserialized, int i) {
+        System.out.println("-------------------RESPONSE " + i + "---Success--------------------\n");
+        System.out.println(each.getResponse() + "\n\n");
+
+        System.out.println("toString() =>\n" + deserialized);
+        System.out.println("\nvia reflection =>\n" + ToStringBuilder.reflectionToString(deserialized) + "\n\n");
+    }
+    
+    
+    private static void printUnsuccessful(int i, boolean isRequest, Exception e) {
+        if (isRequest) {
+            System.out.println("-------------------REQUEST " + i + "---FAILURE--------------------");
+        }
+        else {
+            System.out.println("-------------------RESPONSE " + i + "---FAILURE--------------------");
+        }
+        System.out.println("\n\nGWT client class couldn't be deserialized/serialized. Have you passed "
+                + "the right class folder or the JARs to be loaded? \n" + e.getMessage() + "\n\n");
     }
 }

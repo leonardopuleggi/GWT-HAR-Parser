@@ -126,7 +126,7 @@ public class HARUtil {
             String strongName = tokens[4];
             String service = tokens[5];
             if (strongName != null && ALLOWED_STRONG_NAME.matcher(strongName).matches()) {
-                return new XHRRequestResponse(httpStatus, req, resp, service);
+                return new XHRRequestResponse(httpStatus, req, resp, service, strongName);
             }
         }
         return result;

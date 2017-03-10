@@ -872,4 +872,8 @@ public class SyncClientSerializationStreamReader extends AbstractSerializationSt
 	public String readString() {
 		return getString(readInt());
 	}
+
+        public SerializationPolicy getSerializationPolicy() {
+            return serializationPolicy;
+        }
 }

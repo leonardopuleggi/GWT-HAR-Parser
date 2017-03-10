@@ -26,15 +26,17 @@ public class XHRRequestResponse implements Serializable {
     private String request;
     private String response;
     private String serviceName;
+    private String strongName;
 
     public XHRRequestResponse() {
     }
 
-    public XHRRequestResponse(Integer httpStatus, String request, String response, String serviceName) {
+    public XHRRequestResponse(Integer httpStatus, String request, String response, String serviceName, String strongName) {
         this.httpStatus = httpStatus;
         this.request = request;
         this.response = response;
         this.serviceName = serviceName;
+        this.strongName = strongName;
     }
 
     public Integer getHttpStatus() {
@@ -69,8 +71,16 @@ public class XHRRequestResponse implements Serializable {
         this.serviceName = serviceName;
     }
 
+    public String getStrongName() {
+        return strongName;
+    }
+
+    public void setStrongName(String strongName) {
+        this.strongName = strongName;
+    }
+
     @Override
     public String toString() {
-        return "XHR "+httpStatus+" "+serviceName+"\nreq: "+request+"\nresp: "+response+"\n\n";
+        return "XHR "+httpStatus+" "+serviceName+" "+strongName+"\nreq: "+request+"\nresp: "+response+"\n\n";
     }
 }
