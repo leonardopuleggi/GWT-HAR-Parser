@@ -33,12 +33,12 @@ public class Main {
         String har = "";
         String rpcFolder = "";
 
-        if (args == null || args.length < 3) {
+        if (args == null || args.length < 2) {
             printDefault();
         } else {
             classpath = args[0];
             har = args[1];
-            rpcFolder = args[2];
+            //rpcFolder = args[2];
             printOptions(classpath, har, rpcFolder);
         }
 
@@ -69,6 +69,6 @@ public class Main {
     }
 
     private static void printOptions(String classpath, String har, String rpcFolder) {
-        System.out.println("You've launched the GWTHARarser with the following classpath " + classpath + ", the *.gwt.rpc in this folder "+rpcFolder+" and this HAR file " + har + "\n");
+        System.out.println("You've launched the GWTHARarser with the following classpath " + classpath + " and this HAR file " + har + "\n");
     }
 }

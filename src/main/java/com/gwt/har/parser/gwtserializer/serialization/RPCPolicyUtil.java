@@ -15,28 +15,22 @@
 package com.gwt.har.parser.gwtserializer.serialization;
 
 import com.google.gwt.user.server.rpc.SerializationPolicy;
-import com.google.gwt.user.server.rpc.SerializationPolicyLoader;
 import com.google.gwt.user.server.rpc.SerializationPolicyProvider;
 import com.gwt.har.parser.com.gdevelop.gwt.syncrpc.SyncClientSerializationStreamReader;
 import com.gwt.har.parser.gwtserializer.model.XHRRequestResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 
 /**
  * RPC policy loader.
  * It takes a folder and try to load the policy file (gwt.rpc) in that folder.
  * 
+ * TODO: investigate why it's better for me to use a dummy policy ALL the time. I get less parser error
+ * 
+ * 
  * @author
  */
 public class RPCPolicyUtil implements SerializationPolicyProvider {
-    private final Map<String, SyncClientSerializationStreamReader> readers = new HashMap<>();
+    //private final Map<String, SyncClientSerializationStreamReader> readers = new HashMap<>();
 
     /**
      * Loads the .gwt.rpc file and returns a cached reader to parse the request/response.
@@ -49,6 +43,7 @@ public class RPCPolicyUtil implements SerializationPolicyProvider {
         //default result
         SyncClientSerializationStreamReader result = new SyncClientSerializationStreamReader(new DummySerializationPolicy());
         
+        /*
         if(!baseFolder.endsWith(File.separator)) {
             baseFolder += File.separator;
         }
@@ -70,17 +65,18 @@ public class RPCPolicyUtil implements SerializationPolicyProvider {
                 }
             }
         }
-        //set error level on the reader
+        //set error level on the reader*/
         result.getLogger().setLevel(Level.SEVERE);
         return result;
     }
 
     @Override
     public SerializationPolicy getSerializationPolicy(String moduleBaseURL, String serializationPolicyStrongName) {
+        /*
         SyncClientSerializationStreamReader reader = readers.get(serializationPolicyStrongName);
         if (reader != null) {
             return reader.getSerializationPolicy();
-        }
+        }*/
         return new DummySerializationPolicy();
     }
 }
